@@ -1,5 +1,6 @@
 package Sem2;
 
+import java.util.InputMismatchException;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -7,6 +8,8 @@ public class Program {
     private static final char DOT_HUMAN = 'X';
     private static final char DOT_AI = '0';
     private static final char DOT_EMPTY = '*';
+    private static final int MAX_FIELD_SIZE = 9; // Logic limit, can be changed
+    private static final int MAX_FIGURE_TO_WIN_SIZE = 8; // Logic limit, can be changed
     private static final Scanner sc = new Scanner(System.in);
     private static final Random ran = new Random();
     private static char[][] field;
@@ -15,15 +18,15 @@ public class Program {
     private static int figuresToWin;
 
     /**
-     * Точка входа в программу, метод main
+     * The entry point of the program, the main method.
      *
-     * @param args -
+     * @param args This is an arguments
      */
     public static void main(String[] args) {
         System.out.print("Enter field size and figures to win (Space is separator)\n" +
                 "Recommended 3 or more for both args : ");
-        int size = sc.nextInt();
-        int figureNumber = sc.nextInt();
+        int size = valParams(MAX_FIELD_SIZE, "size");
+        int figureNumber = valParams(MAX_FIGURE_TO_WIN_SIZE, "figures to win");
         while (true) {
             if (size < figureNumber || (size < 3 || figureNumber < 3)) {
                 System.out.println("Incorrect parameters!");
@@ -99,8 +102,8 @@ public class Program {
         int x, y;
         do {
             System.out.println("Enter coordinates X and Y: ");
-            x = sc.nextInt() - 1;
-            y = sc.nextInt() - 1;
+            x = valParams(fieldSizeX, "X") - 1;
+            y = valParams(fieldSizeY, "Y") - 1;
         } while (!isCellValid(x, y) || !isCellEmpty(x, y));
         field[x][y] = DOT_HUMAN;
     }
@@ -129,10 +132,10 @@ public class Program {
 
     /**
      * Ai Turn
-     *  Operation principle: Initially, the AI checks the center; if it's available, it places its mark.
-     *  Then, it goes through the entire board, placing the opponent's mark and checking if it would win.
-     *  If placing the opponent's mark results in a victory,
-     *  it places its own mark there; otherwise, it reverts the mark before further evaluation. Other is a random put's
+     * Operation principle: Initially, the AI checks the center; if it's available, it places its mark.
+     * Then, it goes through the entire board, placing the opponent's mark and checking if it would win.
+     * If placing the opponent's mark results in a victory,
+     * it places its own mark there; otherwise, it reverts the mark before further evaluation. Other is a random put's
      */
     private static void aiTurn() {
         int x, y;
@@ -147,7 +150,7 @@ public class Program {
             for (int i = 0; i < fieldSizeX; i++) {
                 for (int j = 0; j < fieldSizeY; j++) {
                     char ch = field[i][j];
-                    if (isCellEmpty(i, j)){
+                    if (isCellEmpty(i, j)) {
                         field[i][j] = DOT_HUMAN;
                         if (checkWin(DOT_HUMAN)) {
                             field[i][j] = DOT_AI;
@@ -183,16 +186,17 @@ public class Program {
 
     /**
      * Check for win
-     *  Operation principle: It goes through the entire field in both vertical and horizontal directions,
-     *  counting consecutive marks of the 'c' parameter.
-     *  Then, it traverses the halves of the field in diagonal directions.
-     *  Work for any field size and figures to win.
+     * Operation principle: It goes through the entire field in both vertical and horizontal directions,
+     * counting consecutive marks of the 'c' parameter.
+     * Then, it traverses the halves of the field in diagonal directions.
+     * Work for any field size and figures to win.
      *
      * @param c char figure
      * @return bool
      */
 
     private static boolean checkWin(char c) {
+//        int x, y;
         // Проверка на вертикальный и горизонтальный выигрыш
         int countVer = 0, countHor = 0;
         for (int i = 0; i < fieldSizeX; i++) {
@@ -254,5 +258,35 @@ public class Program {
             }
         }
         return true;
+    }
+
+    /**
+     * Validate input from user
+     *
+     * @param till this parameter is the maximum limit for entering an integer number.
+     * @param paramName Name of a parameter.
+     * @return - correct Int value.
+     */
+    private static int valParams(int till, String paramName) {
+        System.out.printf("Enter parameter %s: ", paramName);
+        while (true) {
+            try {
+                int num = sc.nextInt();
+                if (num > 0 && num <= till) {
+                    return num;
+                } else {
+                    sc.nextLine();
+                    sc.reset();
+                    System.out.printf("\nEnter correct parameter %s (1 till %d): ", paramName, till);
+                }
+            } catch (InputMismatchException e) {
+                sc.nextLine();
+                sc.reset();
+                System.out.println("Incorrect input");
+                System.out.printf("\nEnter correct parameter for %s:  ", paramName);
+            } finally {
+                System.out.println();
+            }
+        }
     }
 }
